@@ -21,8 +21,8 @@ with app.app_context():
 
 # Product Class/Model
 class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True)
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    name = db.Column(db.String(100))
     description = db.Column(db.String(200))
     price = db.Column(db.Float)
     qty = db.Column(db.Integer)
@@ -40,8 +40,8 @@ class ProductSchema(ma.Schema):
 
 # #User Class/Model
 class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True)
+    id = db.Column(db.Integer, unique=True,primary_key=True)
+    name = db.Column(db.String(100))
     email = db.Column(db.String(100))
     address = db.Column(db.String(100))
 
@@ -86,17 +86,14 @@ def add_user():
 def get_users():
     all_users = User.query.all()
     result = jsonify(users_schema.dump(all_users))
-    xml = dicttoxml(loads(result.data))
-    tree = ET.parse(xml)
-    root = tree.getroot()
-    return xml
+    return dicttoxml(loads(result.data))
 
 #Get Single User
 @app.route('/user/<id>', methods=['GET'])
 def get_user(id):
     user = User.query.get(id)
-    xml = dicttoxml(loads(user_scema.jsonify(user).data))
-    return xml
+    result = user_scema.jsonify(user)
+    return dicttoxml(loads(result.data))
 
 #Update a User
 @app.route('/user/<id>', methods=['PUT'])
@@ -127,7 +124,9 @@ def delete_user(id):
     db.session.delete(user)
     db.session.commit()
 
-    return user_scema.jsonify(user)
+    result = user_scema.jsonify(user)
+
+    return dicttoxml(loads(result.data))
 
 # Create a Product
 @app.route('/product', methods=['POST'])
@@ -154,15 +153,14 @@ def add_product():
 def get_products():
     all_products = Product.query.all()
     result = jsonify(products_schema.dump(all_products))
-    xml = dicttoxml(loads(result.data))
-    return xml
+    return dicttoxml(loads(result.data))
 
 #Get Single Product
 @app.route('/product/<id>', methods=['GET'])
 def get_product(id):
     product = Product.query.get(id)
-    xml = dicttoxml(loads(product_schema.jsonify(product).data))
-    return xml
+    result = product_schema.jsonify(product)
+    return dicttoxml(loads(result.data))
 
 #Update a Product
 @app.route('/product/<id>', methods=['PUT'])
