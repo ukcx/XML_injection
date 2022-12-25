@@ -5,7 +5,6 @@ from json import loads
 from dicttoxml import dicttoxml
 import os
 import xml.etree.ElementTree as ET
-import lxml.etree as etree
 
 # Init app
 app = Flask(__name__)
@@ -41,7 +40,7 @@ class ProductSchema(ma.Schema):
 
 # #User Class/Model
 class User(db.Model):
-    id = db.Column(db.Integer, unique=True,primary_key=True)
+    id = db.Column(db.Integer, unique=True, primary_key=True)
     name = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
 
@@ -60,12 +59,13 @@ products_schema = ProductSchema(many=True)
 user_scema = UserSchema()
 users_schema = UserSchema(many=True)
 
+#parser = ET.XMLParser(encoding="utf-8")
+
 # Create a User
 @app.route('/user', methods=['POST'])
 def add_user():
     response = request.data
-    parser = etree.XMLParser(resolve_entities=True) # Noncompliant
-    tree = etree.fromstring(response, parser)
+    tree = ET.fromstring(response)
 
     name = tree.find('name').text
     password = tree.find('password').text
@@ -100,8 +100,7 @@ def update_user(id):
     user = User.query.get(id)
 
     response = request.data
-    parser = etree.XMLParser(resolve_entities=True) # Noncompliant
-    tree = etree.fromstring(response, parser)
+    tree = ET.fromstring(response)
 
     name = tree.find('name').text
     password = tree.find('password').text
@@ -130,8 +129,7 @@ def delete_user(id):
 @app.route('/product', methods=['POST'])
 def add_product():
     response = request.data
-    parser = etree.XMLParser(resolve_entities=True) # Noncompliant
-    tree = etree.fromstring(response, parser)
+    tree = ET.fromstring(response)
 
     name = tree.find('name').text
     description = tree.find('description').text
@@ -167,8 +165,7 @@ def update_product(id):
     product = Product.query.get(id)
 
     response = request.data
-    parser = etree.XMLParser(resolve_entities=True) # Noncompliant
-    tree = etree.fromstring(response, parser)
+    tree = ET.fromstring(response)
 
     name = tree.find('name').text
     description = tree.find('description').text
