@@ -23,20 +23,18 @@ with app.app_context():
 class Product(db.Model):
     id = db.Column(db.Integer, unique=True, primary_key=True)
     name = db.Column(db.String(100))
-    description = db.Column(db.String(200))
     price = db.Column(db.Float)
     qty = db.Column(db.Integer)
 
-    def __init__(self, name, description, price, qty):
+    def __init__(self, name, price, qty):
         self.name = name
-        self.description = description
         self.price = price
         self.qty = qty
 
 # Product Schema
 class ProductSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'name', 'description', 'price', 'qty')
+        fields = ('id', 'name', 'price', 'qty')
 
 # #User Class/Model
 class User(db.Model):
@@ -132,11 +130,10 @@ def add_product():
     tree = ET.fromstring(response)
 
     name = tree.find('name').text
-    description = tree.find('description').text
     price = tree.find('price').text
     qty = tree.find('qty').text
     
-    new_product = Product(name, description, price, qty)
+    new_product = Product(name, price, qty)
 
     db.session.add(new_product)
     db.session.commit()
@@ -168,12 +165,10 @@ def update_product(id):
     tree = ET.fromstring(response)
 
     name = tree.find('name').text
-    description = tree.find('description').text
     price = tree.find('price').text
     qty = tree.find('qty').text
 
     product.name = name
-    product.description = description
     product.price = price
     product.qty = qty
 
