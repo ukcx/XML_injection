@@ -1,11 +1,28 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
+from flask import render_template, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from json import loads
 from dicttoxml import dicttoxml
 import os
-import xml.etree.ElementTree as ET
+import json
 import lxml.etree as etree
+
+# class XMLHandler(sax.ContentHandler):
+#     def startElement(self, name, attrs):
+#         # This method is called when the parser encounters a start tag
+#         print("Start element:", name)
+#         for key in attrs.keys():
+#             print("Attribute:", key, "=", attrs[key])
+
+#     def characters(self, content):
+#         # This method is called when the parser encounters character data
+#         print("Characters:", content)
+
+#     def endElement(self, name):
+#         # This method is called when the parser encounters an end tag
+#         print("End element:", name)
+
 
 # Init app
 app = Flask(__name__)
@@ -39,18 +56,20 @@ class ProductSchema(ma.Schema):
 
 # #User Class/Model
 class User(db.Model):
-    id = db.Column(db.Integer, unique=True,primary_key=True)
-    name = db.Column(db.String(100), unique=True)
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    email = db.Column(db.String(100), unique=True)
+    name = db.Column(db.String(100))
     password = db.Column(db.String(100))
 
-    def __init__(self, name, password):
+    def __init__(self, name, password, email):
         self.name = name
         self.password = password
+        self.email = email
 
 # User Schema
 class UserSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'name', 'password')
+        fields = ('id', 'name', 'password', 'email')
 
 # Init schema
 product_schema = ProductSchema()
@@ -62,22 +81,45 @@ users_schema = UserSchema(many=True)
 @app.route('/user', methods=['POST'])
 def add_user():
     response = request.data
-    parser = etree.XMLParser(resolve_entities=True) # Noncompliant
-    tree = etree.fromstring(response, parser)
+    
+    print("response is,",response)
 
-    name = tree.find('name').text
-    password = tree.find('password').text
-    new_user = User(name, password)
+    #parser = sax.XMLParser(resolve_entities=True) # Noncompliant
+    tree = etree.fromstring(response)
+    entity = tree.xpath("//*[@name='entity_name']")[0]
+
+    # Resolve the entity using the Entity class
+    resolved_entity = etree.Entity(entity)
+
+    # You can now use the resolved_entity object to access the link or any other information about the entity
+    link = resolved_entity.attrib['link']
+
+    try:
+        name = tree.find('name').text
+        password = tree.find('password').text
+        email = tree.find('email').text
+    except Exception as e:
+        result = {"message": "Name, password and email are required"}
+        print(e)
+        return dicttoxml(loads(json.dumps(result)))
+
+    user = User.query.filter_by(email=email).first()
+    if user:
+        result = {"message": "Email already exists"}
+        print(result)
+        return dicttoxml(loads(json.dumps(result)))
+    
+    new_user = User(name, password, email)
     db.session.add(new_user)
     db.session.commit()
 
-    result = user_scema.jsonify(new_user)
+    result = {"message": name + " created"}
 
-    return dicttoxml(loads(result.data))
+    return dicttoxml(loads(json.dumps(result)))
     # elems = tree.findall('name')
     # for elem in elems:
     #     print(elem.text)
-
+    
 #Get All Users
 @app.route('/user', methods=['GET'])
 def get_users():
@@ -103,9 +145,11 @@ def update_user(id):
 
     name = tree.find('name').text
     password = tree.find('password').text
+    email = tree.find('email').text
 
     user.name = name
     user.password = password
+    user.email = email
 
     db.session.commit()
 
@@ -192,7 +236,72 @@ def delete_product(id):
 
     return dicttoxml(loads(result.data))
 
+@app.route('/login.html')
+def login():
+  return render_template('login.html')
+
+
+@app.route('/signup.html')
+def signup():
+  return render_template('signup.html')
+
+
+@app.route('/')
+def index():
+  return render_template('index.html')
+
+
+
+def authenticate(email, password):
+    # retrieve the user from the database
+    user = User.query.filter_by(email=email, password=password).first()
+    if user:
+        print("user exist")
+        return True
+    else:
+        print("nothing exists")
+        return False
+    # if the user does not exist, return False
+
+
+@app.route('/login', methods=['POST'])
+def login2():
+    # if the user has submitted the form, try to authenticate
+    print("request is,",request.method)
+    response = request.data
+    print("response is,",response)
+    
+    parser = etree.XMLParser(resolve_entities=True) # Noncompliant
+    tree = etree.fromstring(response, parser)
+
+    try:
+        password = tree.find('password').text
+        email = tree.find('email').text
+    except Exception as e:
+        result = {"message": "Password and email are required"}
+        print(e)
+        return dicttoxml(loads(json.dumps(result)))
+
+    # authenticate the user
+    if authenticate(email, password):
+        # authentication was successful, redirect to a protected page
+        print("now to new page")
+        return render_template('./homepage.html')
+    else:
+        # authentication failed, render the login page with an error message
+
+        return render_template('login.html')
+
+
+# @app.route('/homepage.html')
+# def homepage():
+#     retrieve all products from the database
+#     products = Product.query.all()
+#     render the homepage template and pass the products as a variable
+#     return render_template('homepage.html', products=products)
+
 # Run Server
 if __name__ == '__main__':
+   
     app.run(debug=True)
 

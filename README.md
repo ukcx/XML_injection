@@ -1,5 +1,6 @@
 #Run flask without pipenv
 pip install flask flask-sqlalchemy flask-marshmallow marshmallow-sqlalchemy dicttoxml lxml
+pip install Jinja2
 python db_create.py (if db.sqlite does not exist)
 python app.py
 

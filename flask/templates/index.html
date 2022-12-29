@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  background-color: rgb(255, 255, 255);
+}
+h1 {
+  font-size: 5em;
+  color: rgb(189, 0, 0);
+  text-align: center;
+  font-size: 50px;
+}
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.big-button {
+  width: 200px;
+  height: 50px;
+  font-size: 20px;
+  background-color: rgb(0, 0, 0);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+}
+
+.big-button:first-child {
+  margin-right: 10px;
+}
+
+.big-button:last-child {
+  margin-left: 10px;
+}
+
+.big-button:hover {
+  background-color: rgb(0, 0, 0);
+}
+</style>
+</head>
+<body>
+<h1>CS 437 Course Project</h1>
+<div class="button-container">
+    <form action="/login.html" method="get">
+      <button class="big-button" onclick="window.location.href='login.html'">Log In</button>
+    </form> 
+    <form action="/signup.html" method="get">
+      <button class="big-button" onclick="window.location.href='signup.html'">Sign Up</button>
+    </form> 
+</div>
+</body>
+</html>
