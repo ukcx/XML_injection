@@ -9,6 +9,12 @@ flask-sqlalchemy = "*"
 flask-marshmallow = "*"
 marshmallow-sqlalchemy = "*"
 dicttoxml = "*"
+lxml = "*"
+bandit = "*"
+prospector = "*"
+python-taint = "*"
+pyt = "*"
+jinja2 = "*"
 
 [dev-packages]
 
