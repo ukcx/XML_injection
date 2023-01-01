@@ -21,6 +21,11 @@
   font-size: 240px;
 }
 
+.p{
+  font-size: 20px;
+  text-align: center;
+}
+
 .signup-form label {
   display: block;
   margin: 10px 0;
@@ -64,9 +69,13 @@
       <label for="password">Password:</label>
       <input type="password" id="password" name="password"><br><br>
       <button type="submit">Sign Up</button>
+      <p><span id="message"></span></p>
     </form>
+
     
     <script>
+      const message = sessionStorage.getItem('message');
+      document.getElementById('message').textContent = message;
       const form = document.querySelector('.signup-form');
       form.addEventListener('submit', event => {
         event.preventDefault();
@@ -97,6 +106,18 @@
         const xhr = new XMLHttpRequest();
         xhr.open('POST', form.action);
         xhr.setRequestHeader('Content-Type', 'application/xml');
+        xhr.onload = function() {
+            if (this.status === 200) {
+              // If the request was successful, redirect the user to the desired page
+              const data = JSON.parse(this.responseText);
+              // Set the href property to the URL returned by the server
+              sessionStorage.setItem('message', data.message);
+              if(data.status === "success")
+                window.location.href = "/homepage.html";
+              else if(data.status === "fail")
+                window.location.href = "/signup.html";
+            }
+          };
         xhr.send(xmlString);
       });
     </script>

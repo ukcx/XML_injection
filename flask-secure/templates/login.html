@@ -54,8 +54,11 @@
           Not registered? <a href="/signup.html">Create an account</a>
         </div>
       </form>
+      <p><span id="message"></span></p>
       
       <script>
+        const message = sessionStorage.getItem('message');
+        document.getElementById('message').textContent = message;
         const form = document.querySelector('form');
         form.addEventListener('submit', event => {
           event.preventDefault();
@@ -64,17 +67,16 @@
           const xmlDoc = document.implementation.createDocument(null, 'login', null);
       
           // Add the form data as elements to the XML document
-          const emailElement = xmlDoc.createElesment('email');
+          const emailElement = xmlDoc.createElement('email');
           emailElement.textContent = form.elements.email.value;
           xmlDoc.documentElement.appendChild(emailElement);
       
           const passwordElement = xmlDoc.createElement('password');
           passwordElement.textContent = form.elements.password.value;
           xmlDoc.documentElement.appendChild(passwordElement);
-
+      
           const header = xmlDoc.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"');
           xmlDoc.insertBefore(header, xmlDoc.firstChild);
-      
           // Convert the XML document to a string using the XMLSerializer
           const xmlString = new XMLSerializer().serializeToString(xmlDoc);
       
@@ -82,6 +84,18 @@
           const xhr = new XMLHttpRequest();
           xhr.open('POST', form.action);
           xhr.setRequestHeader('Content-Type', 'application/xml');
+          xhr.onload = function() {
+            if (this.status === 200) {
+              // If the request was successful, redirect the user to the desired page
+              const data = JSON.parse(this.responseText);
+              // Set the href property to the URL returned by the server
+              sessionStorage.setItem('message', data.message);
+              if(data.status === "success")
+                window.location.href = "homepage.html";
+              else if(data.status === "fail")
+                window.location.href = "login.html";
+            }
+          };
           xhr.send(xmlString);
             });
           </script>

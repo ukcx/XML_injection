@@ -1,6 +1,6 @@
-from flask import Flask, request, jsonify, redirect
-from flask import render_template, send_file
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from flask_marshmallow import Marshmallow
 from json import loads
 from dicttoxml import dicttoxml
@@ -78,52 +78,31 @@ def authenticate(email, password):
 def add_user():
     response = request.data
 
-    try:
-        # xml = ET.XML(response)
-        # xmlTree = ET.ElementTree(xml)
-        # # get the DTD object
-        # dtd = xmlTree.docinfo.internalDTD
-
-        # print(type(dtd.entities()))
-        # # iterate through the entities in the DTD
-        # for entity in dtd.entities():
-        #     # print the entity name and value
-        #     print(entity.tag)
-        #     if entity.tag == "ENTITY":
-        #         print(entity.name, entity.content)
-        #     else:
-        #         print(f"Entity: {entity.name}, Value: {entity.content}")
-        
+    try:        
         parser = etree.XMLParser(resolve_entities=False) # Noncompliant
         tree = etree.fromstring(response, parser)
     except Exception as e:
-        result = {"message": "Invalid XML"}
-        return dicttoxml(loads(json.dumps(result)))
+        return jsonify({"status": "fail", "message": "Invalid XML"})
 
     try:
         name = tree.find('name').text
         password = tree.find('password').text
         email = tree.find('email').text
     except Exception as e:
-        result = {"message": "Name, password and email are required"}
-        return dicttoxml(loads(json.dumps(result)))
+        return jsonify({"status": "fail", "message": "Name, password and email are required"})
 
     if name == None or password == None or email == None:
-        result = {"message": "Name, password and email cannot be empty"}
-        return dicttoxml(loads(json.dumps(result)))
+        return jsonify({"status": "fail", "message": "Name, password and email cannot be empty"})
 
     user = User.query.filter_by(email=email).first()
     if user != None:
-        result = {"message": "Email already exists"}
-        return dicttoxml(loads(json.dumps(result)))
+        return jsonify({"status": "fail", "message": "Email already exists"})
     
     new_user = User(name, password, email)
     db.session.add(new_user)
     db.session.commit()
 
-    result = {"message": name + " created"}
-
-    return dicttoxml(loads(json.dumps(result)))
+    return jsonify({"status": "success", "user": email , "message": "Logged in as " + email})
 
 
 @app.route('/login', methods=['POST'])
@@ -135,28 +114,25 @@ def login2():
         parser = etree.XMLParser(resolve_entities=False) # Noncompliant
         tree = etree.fromstring(response, parser)
     except Exception as e:
-        result = {"message": "Invalid XML"}
-        return dicttoxml(loads(json.dumps(result)))
+        jsonify({"status": "fail", "message": "Invalid XML"})
 
     try:
         password = tree.find('password').text
         email = tree.find('email').text
     except Exception as e:
-        result = {"message": "Password and email are required"}
-        return dicttoxml(loads(json.dumps(result)))
+        return jsonify({"status": "fail", "message": "Password and email are required"})
 
     if password == None or email == None:
-        result = {"message": "Password and email cannot be empty"}
-        return dicttoxml(loads(json.dumps(result)))
+        return jsonify({"status": "fail", "message": "Password and email cannot be empty"})
 
     # authenticate the user
     if authenticate(email, password):
         # authentication was successful, redirect to a protected page
         print("now to new page")
-        return render_template('./homepage.html')
+        return jsonify({"status": 'success', "user": email, "message": "Logged in as " + email})
     else:
         # authentication failed, render the login page with an error message
-        return render_template('login.html')
+        return jsonify({"status": 'fail', "message": "Invalid credentials"})
 
 #Get All Users
 @app.route('/user', methods=['GET'])
@@ -170,7 +146,7 @@ def get_users():
 def get_user(id):
     user = User.query.filter_by(id=id).with_entities(User.name, User.email).one()
     result = user_scema.jsonify(user)
-    return dicttoxml(loads(result.data))
+    return render_template('user.html', user=loads(result.data))
 
 #Update a User
 @app.route('/user/<id>', methods=['PUT'])
@@ -215,9 +191,7 @@ def add_product():
         parser = etree.XMLParser(resolve_entities=False) # Noncompliant
         tree = etree.fromstring(response, parser)
     except Exception as e:
-        print(e)
-        result = {"message": "Invalid XML"}
-        return dicttoxml(loads(json.dumps(result)))
+        return jsonify({"status": "fail" , "message": "Invalid XML"})
 
     try:
         name = tree.find('name').text
@@ -225,36 +199,46 @@ def add_product():
         qty = tree.find('qty').text
         print(name)
     except Exception as e:
-        result = {"message": "Name, price and quantity are required"}
-        print(e)
-        return dicttoxml(loads(json.dumps(result)))
+        return jsonify({"status": "fail", "message": "Name, price and quantity are required"})
 
     if name == None or price == None or qty == None:
-        result = {"message": "Name, price and quantity cannot be empty"}
-        return dicttoxml(loads(json.dumps(result)))
+        return jsonify({"status": "fail", "message": "Name, price and quantity cannot be empty"})
     
     new_product = Product(name, price, qty)
 
     db.session.add(new_product)
-    db.session.commit()
+    db.session.commit()    
+    id = db.session.query(func.max(Product.id)).scalar()
 
     result = product_schema.jsonify(new_product)
 
-    return dicttoxml(loads(result.data))
+    return jsonify({"status": "success" ,"message": "Product created successfully", "productURL": 'product/' + str(id)})
 
 #Get All Products
-@app.route('/product', methods=['GET'])
-def get_products():
-    all_products = Product.query.with_entities(Product.name, Product.price, Product.qty).all()
+# @app.route('/product', methods=['GET'])
+# def get_products():
+#     all_products = Product.query.with_entities(Product.name, Product.price, Product.qty).all()
+#     result = jsonify(products_schema.dump(all_products))
+#     print(loads(result.data))
+#     return render_template('index.html', products=loads(result.data))
+
+#Get All Product Names
+@app.route('/productnames', methods=['GET'])
+def get_product_names():
+    all_products = Product.query.with_entities(Product.id, Product.name).all()
     result = jsonify(products_schema.dump(all_products))
-    return dicttoxml(loads(result.data))
+    result = loads(result.data)
+    new_result = []
+    for product in result:
+        new_result.append({product['id']: product['name']})
+    return render_template('homepage.html', products=new_result)
 
 #Get Single Product
 @app.route('/product/<id>', methods=['GET'])
 def get_product(id):
     product = Product.query.filter_by(id=id).with_entities(Product.name, Product.price, Product.qty).one()
     result = product_schema.jsonify(product)
-    return dicttoxml(loads(result.data))
+    return render_template('product.html', product=loads(result.data))
 
 #Update a Product
 @app.route('/product/<id>', methods=['PUT'])
@@ -299,6 +283,13 @@ def login():
 def signup():
   return render_template('signup.html')
 
+@app.route('/homepage.html')
+def homepage():
+  return render_template('homepage.html')
+
+@app.route('/addproduct.html')
+def addproductpage():
+  return render_template('addproduct.html')
 
 @app.route('/')
 def index():
@@ -316,3 +307,16 @@ if __name__ == '__main__':
    
     app.run(debug=True)
 
+# xml = ET.XML(response)
+# xmlTree = ET.ElementTree(xml)
+# # get the DTD object
+# dtd = xmlTree.docinfo.internalDTD
+# print(type(dtd.entities()))
+# # iterate through the entities in the DTD
+# for entity in dtd.entities():
+#     # print the entity name and value
+#     print(entity.tag)
+#     if entity.tag == "ENTITY":
+#         print(entity.name, entity.content)
+#     else:
+#         print(f"Entity: {entity.name}, Value: {entity.content}")
