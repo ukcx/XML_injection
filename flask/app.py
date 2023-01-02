@@ -81,7 +81,7 @@ def add_user():
     
     print("response is,",response)
 
-    #parser = sax.XMLParser(resolve_entities=True) # Noncompliant
+    #parser = etree.XMLParser(resolve_entities=True) # Noncompliant
     try:
         tree = etree.fromstring(response,parser=parser)
     except:
@@ -114,7 +114,7 @@ def add_user():
     db.session.add(new_user)
     db.session.commit()
 
-    result = {"message": name + " created"}
+    result = {"message": str(name) + " created"}
 
     return jsonify({"status": "success", "user": name , "email": email, "message": "Logged in as " + email})
     # elems = tree.findall('name')
