@@ -23,7 +23,7 @@ import lxml.etree as etree
 #         # This method is called when the parser encounters an end tag
 #         print("End element:", name)
 
-
+parser = etree.XMLParser(resolve_entities=True, no_network=False,huge_tree=True,dtd_validation=True)
 # Init app
 app = Flask(__name__)
 Flask.current_app = app
@@ -85,14 +85,18 @@ def add_user():
     print("response is,",response)
 
     #parser = sax.XMLParser(resolve_entities=True) # Noncompliant
-    tree = etree.fromstring(response)
-    entity = tree.xpath("//*[@name='entity_name']")[0]
+    try:
+        tree = etree.fromstring(response,parser=parser)
+    except:
+        result = {"message": name + "wrong type xml"}
+        return dicttoxml(loads(json.dumps(result)))
+    # entity = tree.xpath("//*[@name='entity_name']")[0]
 
-    # Resolve the entity using the Entity class
-    resolved_entity = etree.Entity(entity)
+    # # Resolve the entity using the Entity class
+    # resolved_entity = etree.Entity(entity)
 
-    # You can now use the resolved_entity object to access the link or any other information about the entity
-    link = resolved_entity.attrib['link']
+    # # You can now use the resolved_entity object to access the link or any other information about the entity
+    # link = resolved_entity.attrib['link']
 
     try:
         name = tree.find('name').text
@@ -140,7 +144,7 @@ def update_user(id):
     user = User.query.get(id)
 
     response = request.data
-    parser = etree.XMLParser(resolve_entities=True) # Noncompliant
+    #parser = etree.XMLParser(resolve_entities=True) # Noncompliant
     tree = etree.fromstring(response, parser)
 
     name = tree.find('name').text
@@ -172,7 +176,7 @@ def delete_user(id):
 @app.route('/product', methods=['POST'])
 def add_product():
     response = request.data
-    parser = etree.XMLParser(resolve_entities=True) # Noncompliant
+    #parser = etree.XMLParser(resolve_entities=True) # Noncompliant
     tree = etree.fromstring(response, parser)
 
     name = tree.find('name').text
@@ -208,7 +212,7 @@ def update_product(id):
     product = Product.query.get(id)
 
     response = request.data
-    parser = etree.XMLParser(resolve_entities=True) # Noncompliant
+    #parser = etree.XMLParser(resolve_entities=True) # Noncompliant
     tree = etree.fromstring(response, parser)
 
     name = tree.find('name').text
@@ -271,7 +275,7 @@ def login2():
     response = request.data
     print("response is,",response)
     
-    parser = etree.XMLParser(resolve_entities=True) # Noncompliant
+    #parser = etree.XMLParser(resolve_entities=True) # Noncompliant
     tree = etree.fromstring(response, parser)
 
     try:
