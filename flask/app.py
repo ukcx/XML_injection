@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, redirect
 from flask import render_template, send_file
+from sqlalchemy import func
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from json import loads
@@ -212,6 +213,7 @@ def add_product():
 
     db.session.add(new_product)
     db.session.commit()
+    id = db.session.query(func.max(Product.id)).scalar()
 
     result = product_schema.jsonify(new_product)
 
