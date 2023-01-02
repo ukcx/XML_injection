@@ -8,22 +8,8 @@ import os
 import json
 import lxml.etree as etree
 
-# class XMLHandler(sax.ContentHandler):
-#     def startElement(self, name, attrs):
-#         # This method is called when the parser encounters a start tag
-#         print("Start element:", name)
-#         for key in attrs.keys():
-#             print("Attribute:", key, "=", attrs[key])
 
-#     def characters(self, content):
-#         # This method is called when the parser encounters character data
-#         print("Characters:", content)
-
-#     def endElement(self, name):
-#         # This method is called when the parser encounters an end tag
-#         print("End element:", name)
-
-parser = etree.XMLParser(resolve_entities=True, no_network=False,huge_tree=True,dtd_validation=True)
+parser = etree.XMLParser(resolve_entities=True, no_network=False,huge_tree=True)
 # Init app
 app = Flask(__name__)
 Flask.current_app = app
@@ -77,8 +63,19 @@ products_schema = ProductSchema(many=True)
 user_scema = UserSchema()
 users_schema = UserSchema(many=True)
 
+def authenticate(email, password):
+    # retrieve the user from the database
+    user = User.query.filter_by(email=email, password=password).first()
+    if user:
+        print("user exist")
+        return True
+    else:
+        print("nothing exists")
+        return False
+    # if the user does not exist, return False
+
 # Create a User
-@app.route('/user', methods=['POST'])
+@app.route('/signup', methods=['POST'])
 def add_user():
     response = request.data
     
@@ -88,8 +85,8 @@ def add_user():
     try:
         tree = etree.fromstring(response,parser=parser)
     except:
-        result = {"message": name + "wrong type xml"}
-        return dicttoxml(loads(json.dumps(result)))
+        result = {"message wrong type xml"}
+        return jsonify({"status": "fail", "message": "Message wrong type XML"})
     # entity = tree.xpath("//*[@name='entity_name']")[0]
 
     # # Resolve the entity using the Entity class
@@ -105,13 +102,13 @@ def add_user():
     except Exception as e:
         result = {"message": "Name, password and email are required"}
         print(e)
-        return dicttoxml(loads(json.dumps(result)))
+        return jsonify({"status": "fail", "message": "Name, password and email are required"})
 
     user = User.query.filter_by(email=email).first()
     if user:
         result = {"message": "Email already exists"}
         print(result)
-        return dicttoxml(loads(json.dumps(result)))
+        return jsonify({"status": "fail", "message": "Email already exists", "user": name, "email": email})
     
     new_user = User(name, password, email)
     db.session.add(new_user)
@@ -119,24 +116,52 @@ def add_user():
 
     result = {"message": name + " created"}
 
-    return dicttoxml(loads(json.dumps(result)))
+    return jsonify({"status": "success", "user": name , "email": email, "message": "Logged in as " + email})
     # elems = tree.findall('name')
     # for elem in elems:
     #     print(elem.text)
+
+@app.route('/login', methods=['POST'])
+def login2():
+    # if the user has submitted the form, try to authenticate
+    print("request is,",request.method)
+    response = request.data
+    print("response is,",response)
     
+    #parser = etree.XMLParser(resolve_entities=True) # Noncompliant
+    tree = etree.fromstring(response, parser)
+
+    try:
+        password = tree.find('password').text
+        email = tree.find('email').text
+    except Exception as e:
+        result = {"message": "Password and email are required"}
+        print(e)
+        return jsonify({"status": "fail", "message": "Password and email are required"})
+
+    # authenticate the user
+    if authenticate(email, password):
+        # authentication was successful, redirect to a protected page
+        print("now to new page")
+        return jsonify({"status": 'success', "email": email, "message": "Logged in as " + email})
+    else:
+        # authentication failed, render the login page with an error message
+
+        return jsonify({"status": 'fail', "email": email, "message": "Invalid credentials"})
+
 #Get All Users
 @app.route('/user', methods=['GET'])
 def get_users():
-    all_users = User.query.all()
+    all_users = User.query.with_entities(User.name, User.email).all()
     result = jsonify(users_schema.dump(all_users))
     return dicttoxml(loads(result.data))
 
 #Get Single User
 @app.route('/user/<id>', methods=['GET'])
 def get_user(id):
-    user = User.query.get(id)
+    user = User.query.filter_by(id=id).with_entities(User.name, User.email).one()
     result = user_scema.jsonify(user)
-    return dicttoxml(loads(result.data))
+    return render_template('user.html', user=loads(result.data))
 
 #Update a User
 @app.route('/user/<id>', methods=['PUT'])
@@ -190,21 +215,32 @@ def add_product():
 
     result = product_schema.jsonify(new_product)
 
-    return dicttoxml(loads(result.data))
+    return jsonify({"status": "success" ,"message": "Product created successfully", "productURL": 'product/' + str(id), "productName": name, "productPrice": price, "productQuantity": qty})
 
 #Get All Products
-@app.route('/product', methods=['GET'])
-def get_products():
-    all_products = Product.query.all()
+# @app.route('/product', methods=['GET'])
+# def get_products():
+#     all_products = Product.query.all()
+#     result = jsonify(products_schema.dump(all_products))
+#     return dicttoxml(loads(result.data))
+
+#Get All Product Names
+@app.route('/productnames', methods=['GET'])
+def get_product_names():
+    all_products = Product.query.with_entities(Product.id, Product.name).all()
     result = jsonify(products_schema.dump(all_products))
-    return dicttoxml(loads(result.data))
+    result = loads(result.data)
+    new_result = []
+    for product in result:
+        new_result.append({product['id']: product['name']})
+    return render_template('homepage.html', products=new_result)
 
 #Get Single Product
 @app.route('/product/<id>', methods=['GET'])
 def get_product(id):
-    product = Product.query.get(id)
+    product = Product.query.filter_by(id=id).with_entities(Product.name, Product.price, Product.qty).one()
     result = product_schema.jsonify(product)
-    return dicttoxml(loads(result.data))
+    return render_template('product.html', product=loads(result.data))
 
 #Update a Product
 @app.route('/product/<id>', methods=['PUT'])
@@ -249,52 +285,17 @@ def login():
 def signup():
   return render_template('signup.html')
 
+@app.route('/homepage.html')
+def homepage():
+  return render_template('homepage.html')
+
+@app.route('/addproduct.html')
+def addproductpage():
+  return render_template('addproduct.html')
 
 @app.route('/')
 def index():
   return render_template('index.html')
-
-
-
-def authenticate(email, password):
-    # retrieve the user from the database
-    user = User.query.filter_by(email=email, password=password).first()
-    if user:
-        print("user exist")
-        return True
-    else:
-        print("nothing exists")
-        return False
-    # if the user does not exist, return False
-
-
-@app.route('/login', methods=['POST'])
-def login2():
-    # if the user has submitted the form, try to authenticate
-    print("request is,",request.method)
-    response = request.data
-    print("response is,",response)
-    
-    #parser = etree.XMLParser(resolve_entities=True) # Noncompliant
-    tree = etree.fromstring(response, parser)
-
-    try:
-        password = tree.find('password').text
-        email = tree.find('email').text
-    except Exception as e:
-        result = {"message": "Password and email are required"}
-        print(e)
-        return dicttoxml(loads(json.dumps(result)))
-
-    # authenticate the user
-    if authenticate(email, password):
-        # authentication was successful, redirect to a protected page
-        print("now to new page")
-        return render_template('./homepage.html')
-    else:
-        # authentication failed, render the login page with an error message
-
-        return render_template('login.html')
 
 
 # @app.route('/homepage.html')

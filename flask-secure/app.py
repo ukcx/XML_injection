@@ -82,6 +82,7 @@ def add_user():
         parser = etree.XMLParser(resolve_entities=False) # Noncompliant
         tree = etree.fromstring(response, parser)
     except Exception as e:
+        print("error is",e)
         return jsonify({"status": "fail", "message": "Invalid XML"})
 
     try:

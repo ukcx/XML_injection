@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Home</title>
+        <style>
+body {
+  background-color: rgb(255, 255, 255);
+}
+h2 {
+  font-size: 5em;
+  color: rgb(189, 0, 0);
+  text-align: center;
+  font-size: 50px;
+}
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.product-container {
+  display: grid;
+  grid-area: auto;
+  grid-row-end: auto;
+  grid-template-columns: repeat(4, 1fr);
+  justify-content: start;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding-left: 80px;
+}
+
+.big-button {
+  width: 200px;
+  height: 50px;
+  font-size: 18px;
+  background-color: rgb(0, 0, 0);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+}
+
+.big-button:first-child {
+  margin-right: 10px;
+}
+
+.big-button:last-child {
+  margin-left: 10px;
+}
+
+.big-button:hover {
+  background-color: rgb(0, 0, 0);
+}
+
+.main-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 100%;
+  text-align: center;
+}
+
+.main-container div {
+  width: 300px;
+  border: 2px solid dodgerblue;
+  height: 250px;
+  margin-bottom: 10px;
+}
+
+div h3 {
+  font-size: 30px;
+  color: dodgerblue;
+  background-color: #333;
+  padding: 20px;
+  margin: 0 0;
+  border-bottom: 2px solid orange;
+}
+
+div h4 {
+  margin-top: 2em;
+  margin-bottom: 2em;
+  font-size: 20px;
+}
+
+div a {
+  background-color: dodgerblue;
+  padding: 15px 75px;
+  border-radius: 2px;
+  text-decoration: none;
+  color: white;
+}
+
+div a:hover {
+  background-color: black;
+  transition: ease .25s;
+  color: dodgerblue;
+}
+        </style>
+    </head>
+    <body>
+        <h2>Home</h2>
+        <div class="home">
+          <p>Welcome to the home page!</p>
+          <p>Message: <span id="message"></span></p>
+        </div>
+        <div class="button-container">
+            <form action="/productnames" method="get">
+                <button class="big-button" onclick="window.location.href=''">Get Products</button>
+            </form> 
+            <form action="/addproduct.html" method="get">
+                <button class="big-button" onclick="window.location.href='addproduct.html'">Add New Product</button>
+            </form> 
+            <form action="/" method="get">
+              <button class="big-button" onclick="window.location.href=''">Go Back to the Login Page</button>
+            </form> 
+        </div>
+        <br></br>
+        <div>
+        <ul id="items"class="main-container">
+            {%for product in products %}
+            {%for id, name in product.items() %}
+            <div>
+              <h3>Product {{id}}</h3>
+              <h4>{{name}}</h4>
+                <a href="product/{{ id }}">Get Details</a>
+              </li>
+            </div>
+            {%endfor%}
+            {%endfor%}
+        </ul>
+        </div>
+    </body>
+    <script>
+        const message = sessionStorage.getItem('message');
+        document.getElementById('message').textContent = message;
+    </script>
+</html>

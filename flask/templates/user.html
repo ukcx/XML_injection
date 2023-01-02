@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>User</title>
+<style>
+body {
+  background-color: rgb(255, 255, 255);
+}
+h2 {
+  font-size: 5em;
+  color: rgb(189, 0, 0);
+  text-align: center;
+  font-size: 40px;
+}
+.user-container {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+</style>
+</head>
+<body>
+<h2>User</h2>
+<div class="user-container">
+  <div class="user">
+    {%for field, value in user.items() %}
+    <p>{{field}}: {{value}}</p>
+    {% endfor %}
+  </div>
+</body>
+</html>
