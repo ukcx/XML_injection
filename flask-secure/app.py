@@ -138,14 +138,20 @@ def login2():
 #Get All Users
 @app.route('/user', methods=['GET'])
 def get_users():
-    all_users = User.query.with_entities(User.name, User.email).all()
+    try:
+        all_users = User.query.with_entities(User.name, User.email).all()
+    except:
+        return jsonify({"status": "fail", "message": "There is no user with these paramaters"})
     result = jsonify(users_schema.dump(all_users))
     return dicttoxml(loads(result.data))
 
 #Get Single User
 @app.route('/user/<id>', methods=['GET'])
 def get_user(id):
-    user = User.query.filter_by(id=id).with_entities(User.name, User.email).one()
+    try:
+        user = User.query.filter_by(id=id).with_entities(User.name, User.email).one()
+    except:
+        return jsonify({"status": "fail", "message": "There is no user with this id"})
     result = user_scema.jsonify(user)
     return render_template('user.html', user=loads(result.data))
 
@@ -155,13 +161,20 @@ def update_user(id):
     user = User.query.get(id)
 
     response = request.data
-    parser = etree.XMLParser(resolve_entities=False) # Noncompliant
-    tree = etree.fromstring(response, parser)
-
-    name = tree.find('name').text
-    password = tree.find('password').text
-    email = tree.find('email').text
-
+    try:
+        parser = etree.XMLParser(resolve_entities=False) # Noncompliant
+        tree = etree.fromstring(response, parser)
+    except Exception as e:
+        print("error is",e)
+        return jsonify({"status": "fail", "message": "Invalid XML"})
+    try:
+        name = tree.find('name').text
+        password = tree.find('password').text
+        email = tree.find('email').text
+    except Exception as e:
+        return jsonify({"status": "fail", "message": "Name, password and email are required"})
+    if name == None or password == None or email == None:
+        return jsonify({"status": "fail", "message": "Name, password and email cannot be empty"})
     user.name = name
     user.password = password
     user.email = email
@@ -237,7 +250,10 @@ def get_product_names():
 #Get Single Product
 @app.route('/product/<id>', methods=['GET'])
 def get_product(id):
-    product = Product.query.filter_by(id=id).with_entities(Product.name, Product.price, Product.qty).one()
+    try:
+        product = Product.query.filter_by(id=id).with_entities(Product.name, Product.price, Product.qty).one()
+    except:
+        return jsonify({"status": "fail", "message": "There is no user with these paramaters"})
     result = product_schema.jsonify(product)
     return render_template('product.html', product=loads(result.data))
 
@@ -245,14 +261,25 @@ def get_product(id):
 @app.route('/product/<id>', methods=['PUT'])
 def update_product(id):
     product = Product.query.get(id)
-
+    
     response = request.data
-    parser = etree.XMLParser(resolve_entities=False) # Noncompliant
-    tree = etree.fromstring(response, parser)
+    try:
+        parser = etree.XMLParser(resolve_entities=False) # Noncompliant
+        tree = etree.fromstring(response, parser)
+    except Exception as e:
+        print("error is",e)
+        return jsonify({"status": "fail", "message": "Invalid XML"})
+    try:
 
-    name = tree.find('name').text
-    price = tree.find('price').text
-    qty = tree.find('qty').text
+
+        name = tree.find('name').text
+        price = tree.find('price').text
+        qty = tree.find('qty').text
+    except Exception as e:
+        return jsonify({"status": "fail", "message": "Name, price and quantity are required"})
+
+    if name == None or price == None or qty == None:
+        return jsonify({"status": "fail", "message": "Name, price and quantity cannot be empty"})
 
     product.name = name
     product.price = price
