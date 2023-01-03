@@ -156,47 +156,47 @@ def get_user(id):
     return render_template('user.html', user=loads(result.data))
 
 #Update a User
-@app.route('/user/<id>', methods=['PUT'])
-def update_user(id):
-    user = User.query.get(id)
+# @app.route('/user/<id>', methods=['PUT'])
+# def update_user(id):
+#     user = User.query.get(id)
 
-    response = request.data
-    try:
-        parser = etree.XMLParser(resolve_entities=False) # Noncompliant
-        tree = etree.fromstring(response, parser)
-    except Exception as e:
-        print("error is",e)
-        return jsonify({"status": "fail", "message": "Invalid XML"})
-    try:
-        name = tree.find('name').text
-        password = tree.find('password').text
-        email = tree.find('email').text
-    except Exception as e:
-        return jsonify({"status": "fail", "message": "Name, password and email are required"})
-    if name == None or password == None or email == None:
-        return jsonify({"status": "fail", "message": "Name, password and email cannot be empty"})
-    user.name = name
-    user.password = password
-    user.email = email
+#     response = request.data
+#     try:
+#         parser = etree.XMLParser(resolve_entities=False) # Noncompliant
+#         tree = etree.fromstring(response, parser)
+#     except Exception as e:
+#         print("error is",e)
+#         return jsonify({"status": "fail", "message": "Invalid XML"})
+#     try:
+#         name = tree.find('name').text
+#         password = tree.find('password').text
+#         email = tree.find('email').text
+#     except Exception as e:
+#         return jsonify({"status": "fail", "message": "Name, password and email are required"})
+#     if name == None or password == None or email == None:
+#         return jsonify({"status": "fail", "message": "Name, password and email cannot be empty"})
+#     user.name = name
+#     user.password = password
+#     user.email = email
 
-    db.session.commit()
+#     db.session.commit()
 
-    result = user_scema.jsonify(user)
+#     result = user_scema.jsonify(user)
 
-    return dicttoxml(loads(result.data))
+#     return dicttoxml(loads(result.data))
 
-# Delete User
-@app.route('/user/<id>', methods=['DELETE'])
-def delete_user(id):
-    user = User.query.get(id)
-    db.session.delete(user)
-    db.session.commit()
+# # Delete User
+# @app.route('/user/<id>', methods=['DELETE'])
+# def delete_user(id):
+#     user = User.query.get(id)
+#     db.session.delete(user)
+#     db.session.commit()
 
-    result = user_scema.jsonify(user)
+#     result = user_scema.jsonify(user)
 
-    return dicttoxml(loads(result.data))
+#     return dicttoxml(loads(result.data))
 
-# Create a Product
+# # Create a Product
 @app.route('/product', methods=['POST'])
 def add_product():
     response = request.data
@@ -258,49 +258,49 @@ def get_product(id):
     return render_template('product.html', product=loads(result.data))
 
 #Update a Product
-@app.route('/product/<id>', methods=['PUT'])
-def update_product(id):
-    product = Product.query.get(id)
+# @app.route('/product/<id>', methods=['PUT'])
+# def update_product(id):
+#     product = Product.query.get(id)
     
-    response = request.data
-    try:
-        parser = etree.XMLParser(resolve_entities=False) # Noncompliant
-        tree = etree.fromstring(response, parser)
-    except Exception as e:
-        print("error is",e)
-        return jsonify({"status": "fail", "message": "Invalid XML"})
-    try:
+#     response = request.data
+#     try:
+#         parser = etree.XMLParser(resolve_entities=False) # Noncompliant
+#         tree = etree.fromstring(response, parser)
+#     except Exception as e:
+#         print("error is",e)
+#         return jsonify({"status": "fail", "message": "Invalid XML"})
+#     try:
 
 
-        name = tree.find('name').text
-        price = tree.find('price').text
-        qty = tree.find('qty').text
-    except Exception as e:
-        return jsonify({"status": "fail", "message": "Name, price and quantity are required"})
+#         name = tree.find('name').text
+#         price = tree.find('price').text
+#         qty = tree.find('qty').text
+#     except Exception as e:
+#         return jsonify({"status": "fail", "message": "Name, price and quantity are required"})
 
-    if name == None or price == None or qty == None:
-        return jsonify({"status": "fail", "message": "Name, price and quantity cannot be empty"})
+#     if name == None or price == None or qty == None:
+#         return jsonify({"status": "fail", "message": "Name, price and quantity cannot be empty"})
 
-    product.name = name
-    product.price = price
-    product.qty = qty
+#     product.name = name
+#     product.price = price
+#     product.qty = qty
 
-    db.session.commit()
+#     db.session.commit()
 
-    result = product_schema.jsonify(product)
+#     result = product_schema.jsonify(product)
 
-    return dicttoxml(loads(result.data))
+#     return dicttoxml(loads(result.data))
 
-# Delete Product
-@app.route('/product/<id>', methods=['DELETE'])
-def delete_product(id):
-    product = Product.query.get(id)
-    db.session.delete(product)
-    db.session.commit()
+# # Delete Product
+# @app.route('/product/<id>', methods=['DELETE'])
+# def delete_product(id):
+#     product = Product.query.get(id)
+#     db.session.delete(product)
+#     db.session.commit()
 
-    result = product_schema.jsonify(product)
+#     result = product_schema.jsonify(product)
 
-    return dicttoxml(loads(result.data))
+#     return dicttoxml(loads(result.data))
 
 @app.route('/login.html')
 def login():
