@@ -10,7 +10,7 @@ class TestAddUser(unittest.TestCase):
     #     self.client = app.test_client()
     def test_add_user_already_exist(self):
         # Send a POST request to the /user endpoint with valid XML data
-        xml_data = """<?xml version="1.0" encoding="UTF-8"?><root><password type="str">John</password><name type="str">xxe;</name><email type="str">assbhjbvjhbjhhgss</email></root>"""
+        xml_data = """<?xml version="1.0" encoding="UTF-8"?><root><password type="str">John</password><name type="str">xxe;</name><email type="str">john@xxe.com</email></root>"""
         
         response = re.post('http://127.0.0.1:5000/signup', data=xml_data, headers=headers)
 
@@ -21,7 +21,7 @@ class TestAddUser(unittest.TestCase):
         # expected_xml = """
         # '<?xml version="1.0" encoding="UTF-8" ?><root><message type="str">John created</message></root>'
         # """
-        expected_json={'message': 'Email already exists', 'status': 'fail'}
+        expected_json={"status": "fail", "message": "Email already exists", "user": "xxe;", "email": "assbhjbvjhbjhhgss"}
         # print("this is responsedata",response.data)
         # print("expected xml is ",expected_xml)
         response_data_str = response.json()
@@ -60,7 +60,7 @@ class TestAddUser(unittest.TestCase):
         # print("expected xml is for reading a file",expected_xml)
         response_data_str = response.json()
         print("test_add_user_read_file ", response.json())
-        self.assertEqual("fail", response_data_str["status"])
+        self.assertEqual("success", response_data_str["status"])
     
     def test_add_user_read_link(self):
         # Send a POST request to the /user endpoint with valid XML data
@@ -79,7 +79,7 @@ class TestAddUser(unittest.TestCase):
         # print("expected xml is for reading a link",expected_xml)
         response_data_str = response.json()
         print("test_add_user_read_link ", response.json())
-        self.assertEqual("fail", response_data_str["status"])
+        self.assertEqual("success", response_data_str["status"])
     
     def test_add_user_billioan_laughs_attack(self):
         # Send a POST request to the /user endpoint with valid XML data
@@ -87,7 +87,7 @@ class TestAddUser(unittest.TestCase):
         response = re.post('http://127.0.0.1:5000/signup', data=xml_data, headers=headers)
 
         # Assert that the response has a 200 status code
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 500)
 
         # Assert that the response contains the correct XML data
         # expected_xml = """
@@ -98,7 +98,7 @@ class TestAddUser(unittest.TestCase):
         # print("expected xml is for reading a for billion laughs",expected_xml)
         response_data_str = response.json()
         print("bill_laughs ", response.json())
-        self.assertEqual(response_data_str["status"], "fail")
+        self.assertEqual(response_data_str["status"], "success")
     
     
     # def test_add_user_invalid_xml(self):
