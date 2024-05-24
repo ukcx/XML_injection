@@ -3,7 +3,7 @@
 This project, undertaken as part of the Cybersecurity course, aimed to demonstrate vulnerabilities and protection mechanisms against XML XXE injections.
 
 ## Objective
-The primary objective was to develop a secure distributed file system while exploring vulnerabilities associated with XML XXE injections. Additionally, the project aimed to evaluate the implemented code using various static code analysis tools.
+The primary objective is to demonstrate vulnerabilities and protection mechanisms against XML XXE injections. Additionally, the project aimed to evaluate the implemented code using various static code analysis tools.
 
 ## Implementation Details
 ### User Interface
